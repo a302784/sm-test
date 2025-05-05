@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>SM属性测试问卷</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      line-height: 1.6;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .question {
+      background: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .options label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+    .options input[type="radio"] {
+      margin-right: 8px;
+    }
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0078d7;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    #result {
+      font-weight: bold;
+      font-size: 1.4em;
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SM属性测试问卷（共20题）</h1>
+  <form id="quizForm">
+    <div id="questions"></div>
+    <button type="button" onclick="calculateResult()">提交</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const questionsData = [
+      "当涉及权力交换时，你更倾向于哪一方？",
+      "你对掌控或被掌控的感觉是？",
+      "面对规则的设定，你通常：",
+      "你更喜欢在互动中扮演什么角色？",
+      "你对服从规则这件事感觉如何？",
+      "当别人表现出服从时，你会：",
+      "被支配是否让你感到安全或放松？",
+      "在一次互动前，你会主动规划流程吗？",
+      "你对仪式感（如场景布置、穿着）如何看待？",
+      "关于安全词，你通常会：",
+      "被命令或被称呼特定称谓时你的感受是：",
+      "你是否愿意主动承担主导责任？",
+      "你是否喜欢被称为“主人”或“宠物”等角色称谓？",
+      "你在互动中的安全感来自：",
+      "你更倾向于主导流程还是顺从？",
+      "当看到别人顺从时，你会：",
+      "被束缚或限制行动时你的反应是：",
+      "你更倾向于如何建立互动界限？",
+      "你认为控制他人是否是种责任？",
+      "你在SM关系中希望长期扮演的角色是？"
+    ];
+
+    const optionsData = [
+      ["掌控对方（支配）", "被掌控（服从）", "视情况而定", "没有特别偏好"],
+      ["兴奋，喜欢主导一切", "兴奋，喜欢被安排", "两种都能接受", "无特别感觉"],
+      ["喜欢设定规则", "愿意接受规则", "根据对象而定", "不喜欢规则"],
+      ["领导与指引者", "服从与响应者", "视心情变化", "不喜欢区分"],
+      ["制定规则让我满足", "遵守规则让我安心", "因人而异", "不喜欢被限制"],
+      ["充满满足感", "略显不安", "看互动对象", "没有强烈感受"],
+      ["非常同意", "部分同意", "偶尔是", "完全不同意"],
+      ["会主动制定计划", "更喜欢被引导", "看对象而定", "不喜欢计划"],
+      ["很喜欢，能增强氛围", "喜欢遵循", "无所谓", "觉得麻烦"],
+      ["监督并确保执行", "善用来保护自己", "共同制定更重要", "不是太在意"],
+      ["让我有掌控感", "让我有归属感", "都可以", "不喜欢这样"],
+      ["乐意承担", "更喜欢有人引导", "不一定", "尽量不承担"],
+      ["喜欢有威严称呼", "喜欢可爱称谓", "看互动对象", "不喜欢称呼"],
+      ["掌控权让我安心", "信任他人更安心", "相互平衡", "靠自己最好"],
+      ["引导对方", "跟随对方", "互动中平衡", "尽量保持独立"],
+      ["非常愉悦", "害羞但喜欢", "不确定", "无特别感受"],
+      ["不舒服，更爱控制", "安心感上升", "视对象而定", "没特别感受"],
+      ["我设定并沟通界限", "我接受别人设定", "互动协商", "不喜欢设限"],
+      ["是，我负责掌控", "否，我希望被照顾", "都可以", "我不喜欢控制"],
+      ["主导方（S）", "服从方（M）", "视情况而变", "不参与角色设定"]
+    ];
+
+    const scores = [
+      [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0],
+      [2, 0, 1, 0], [0, 1, 1, 2], [2, 0, 1, 0], [2, 0, 1, 0], [2, 1, 1, 0],
+      [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0],
+      [2, 1, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0], [2, 0, 1, 0]
+    ];
+
+    const container = document.getElementById("questions");
+    questionsData.forEach((q, i) => {
+      const div = document.createElement("div");
+      div.className = "question";
+      const p = document.createElement("p");
+      p.textContent = `${i + 1}. ${q}`;
+      div.appendChild(p);
+      const optionsDiv = document.createElement("div");
+      optionsDiv.className = "options";
+      optionsData[i].forEach((opt, j) => {
+        const label = document.createElement("label");
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `q${i + 1}`;
+        radio.value = j;
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(` ${opt}`));
+        optionsDiv.appendChild(label);
+      });
+      div.appendChild(optionsDiv);
+      container.appendChild(div);
+    });
+
+    function calculateResult() {
+      let total = 0;
+      for (let i = 0; i < 20; i++) {
+        const selected = document.querySelector(`input[name=q${i + 1}]:checked`);
+        if (!selected) {
+          alert(`请完成第 ${i + 1} 题`);
+          return;
+        }
+        total += scores[i][parseInt(selected.value)];
+      }
+      const result = document.getElementById("result");
+      if (total >= 32) result.textContent = "你的倾向为 S（支配者）属性";
+      else if (total >= 20) result.textContent = "你更像是 Switch（可互换）角色";
+      else result.textContent = "你的倾向为 M（服从者）属性";
+    }
+  </script>
+</body>
+</html>
